@@ -7,7 +7,7 @@ Click too early on a non-Ace and you lose.
 
 > https://reflex-card-game.onrender.com/
 > 
-> https://reflex-card-game.fly.dev/
+> https://reflex-card-game.fly.dev/ *(Fly.io free tier — available for 7 days)*
 
 ## Architecture
 
