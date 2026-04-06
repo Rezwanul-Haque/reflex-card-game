@@ -8,7 +8,6 @@ interface HomeProps {
 export function HomePage({ onJoin }: HomeProps) {
   const [name, setName] = useState('');
   const [roomCode, setRoomCode] = useState('');
-  const [mode, setMode] = useState<'menu' | 'create' | 'join'>('menu');
   const createRoom = useCreateRoom();
 
   const handleCreate = async () => {
@@ -22,97 +21,142 @@ export function HomePage({ onJoin }: HomeProps) {
     onJoin(roomCode.trim(), name.trim());
   };
 
-  return (
-    <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center p-4">
-      <div className="text-center mb-12">
-        <h1 className="text-6xl font-bold text-white mb-4">
-          Reflex <span className="text-emerald-400">Card</span> Game
-        </h1>
-        <p className="text-gray-400 text-lg">
-          Wait for the Ace. Be the first to slap!
-        </p>
-      </div>
+  const hasName = name.trim().length > 0;
 
-      <div className="bg-gray-900 rounded-2xl p-8 w-full max-w-md shadow-2xl border border-gray-800">
-        {mode === 'menu' && (
-          <div className="space-y-4">
+  return (
+    <div className="min-h-screen bg-bg flex flex-col">
+      {/* Top App Bar */}
+      <header className="bg-surface-low shadow-[0_4px_20px_rgba(129,236,255,0.05)] w-full z-50">
+        <nav className="flex justify-between items-center w-full px-6 py-4 max-w-5xl mx-auto">
+          <span className="text-2xl font-black tracking-tighter text-primary italic font-headline uppercase">
+            ACE REACTION
+          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold text-on-surface-variant tracking-widest font-headline">
+              REFLEX CARD GAME
+            </span>
+          </div>
+        </nav>
+      </header>
+
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col items-center justify-center px-4 py-12">
+        <div className="w-full max-w-3xl space-y-8">
+          {/* Callsign Input */}
+          <section className="bg-surface-low p-8">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-3 bg-tertiary/10">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="text-tertiary">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-lg font-black font-headline tracking-tighter uppercase">
+                  Operator Callsign
+                </h2>
+                <p className="text-[10px] text-on-surface-variant uppercase tracking-widest">
+                  IDENTITY_REQUIRED_FOR_SESSION
+                </p>
+              </div>
+            </div>
             <input
               type="text"
-              placeholder="Enter your name"
+              placeholder="ENTER_CALLSIGN"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-800 text-white rounded-lg border border-gray-700 focus:border-emerald-400 focus:outline-none text-lg"
+              className="w-full bg-surface-sunken text-primary font-headline font-bold text-center tracking-[0.15em] py-4 border-none focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-outline-variant placeholder:tracking-[0.15em] uppercase"
               maxLength={20}
             />
-            <button
-              onClick={() => name.trim() && setMode('create')}
-              disabled={!name.trim()}
-              className="w-full py-4 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-700 disabled:text-gray-500 text-white font-bold text-lg rounded-lg transition-colors"
-            >
-              Create Game
-            </button>
-            <button
-              onClick={() => name.trim() && setMode('join')}
-              disabled={!name.trim()}
-              className="w-full py-4 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-700 disabled:text-gray-500 text-white font-bold text-lg rounded-lg transition-colors"
-            >
-              Join Game
-            </button>
-          </div>
-        )}
+          </section>
 
-        {mode === 'create' && (
-          <div className="space-y-4">
-            <p className="text-gray-300 text-center">
-              Ready, <span className="text-emerald-400 font-bold">{name}</span>?
-            </p>
-            <button
-              onClick={handleCreate}
-              disabled={createRoom.isPending}
-              className="w-full py-4 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-700 text-white font-bold text-lg rounded-lg transition-colors"
-            >
-              {createRoom.isPending ? 'Creating...' : 'Start New Game'}
-            </button>
-            {createRoom.isError && (
-              <p className="text-red-400 text-center text-sm">
-                {createRoom.error.message}
-              </p>
-            )}
-            <button
-              onClick={() => setMode('menu')}
-              className="w-full py-2 text-gray-400 hover:text-white transition-colors"
-            >
-              Back
-            </button>
-          </div>
-        )}
+          {/* Hero Actions */}
+          <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Create Arena */}
+            <div className="bg-surface-low p-8 flex flex-col justify-between group transition-colors hover:bg-surface-mid">
+              <div>
+                <div className="inline-block p-4 bg-primary/10 mb-6 transition-transform group-hover:scale-110">
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor" className="text-primary">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" />
+                  </svg>
+                </div>
+                <h2 className="text-3xl font-black font-headline tracking-tighter mb-2 uppercase">
+                  Create Arena
+                </h2>
+                <p className="text-on-surface-variant text-sm mb-8">
+                  Host a private match. Share your room code and challenge a
+                  friend to a reflex duel.
+                </p>
+              </div>
+              <button
+                onClick={handleCreate}
+                disabled={!hasName || createRoom.isPending}
+                className="w-full bg-gradient-to-r from-primary to-primary-container py-4 text-on-primary font-headline font-bold uppercase tracking-widest neon-glow-primary transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:shadow-none"
+              >
+                {createRoom.isPending
+                  ? 'INITIALIZING...'
+                  : 'Initiate Broadcast'}
+              </button>
+              {createRoom.isError && (
+                <p className="text-error text-center text-sm mt-3 font-headline">
+                  {createRoom.error.message}
+                </p>
+              )}
+            </div>
 
-        {mode === 'join' && (
-          <div className="space-y-4">
-            <input
-              type="text"
-              placeholder="Enter room code"
-              value={roomCode}
-              onChange={(e) => setRoomCode(e.target.value.toLowerCase())}
-              className="w-full px-4 py-3 bg-gray-800 text-white rounded-lg border border-gray-700 focus:border-blue-400 focus:outline-none text-lg text-center tracking-widest font-mono"
-              maxLength={8}
-            />
-            <button
-              onClick={handleJoin}
-              disabled={!roomCode.trim()}
-              className="w-full py-4 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-700 disabled:text-gray-500 text-white font-bold text-lg rounded-lg transition-colors"
-            >
-              Join Game
-            </button>
-            <button
-              onClick={() => setMode('menu')}
-              className="w-full py-2 text-gray-400 hover:text-white transition-colors"
-            >
-              Back
-            </button>
-          </div>
-        )}
-      </div>
+            {/* Join / Direct Access */}
+            <div className="bg-surface-low p-8 flex flex-col justify-between group transition-colors hover:bg-surface-mid">
+              <div>
+                <div className="inline-block p-4 bg-secondary/10 mb-6 transition-transform group-hover:scale-110">
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor" className="text-secondary">
+                    <path d="M12.65 10A5.99 5.99 0 0 0 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6a5.99 5.99 0 0 0 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z" />
+                  </svg>
+                </div>
+                <h2 className="text-3xl font-black font-headline tracking-tighter mb-2 uppercase">
+                  Direct Access
+                </h2>
+                <p className="text-on-surface-variant text-sm mb-8">
+                  Enter a room code to bypass the lobby and join a secure
+                  session directly.
+                </p>
+              </div>
+              <div className="space-y-4">
+                <input
+                  type="text"
+                  placeholder="ROOM_CODE"
+                  value={roomCode}
+                  onChange={(e) => setRoomCode(e.target.value.toLowerCase())}
+                  className="w-full bg-surface-sunken text-primary font-mono font-bold text-center tracking-[0.5em] py-3 border-none focus:outline-none focus:ring-1 focus:ring-secondary placeholder:text-outline-variant placeholder:tracking-[0.3em]"
+                  maxLength={8}
+                />
+                <button
+                  onClick={handleJoin}
+                  disabled={!hasName || !roomCode.trim()}
+                  className="w-full bg-secondary py-4 text-on-secondary font-headline font-bold uppercase tracking-widest neon-glow-secondary transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:shadow-none"
+                >
+                  Establish Link
+                </button>
+              </div>
+            </div>
+          </section>
+
+          {/* Status Bar */}
+          <section className="bg-surface-low p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-tertiary shrink-0">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="16" x2="12" y2="12" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+              </svg>
+              <span className="text-[10px] font-bold text-on-surface-variant tracking-widest font-headline uppercase">
+                Wait for the Ace. Be the first to slap. Fastest reflex wins.
+              </span>
+            </div>
+            <span className="text-[10px] font-bold text-primary animate-pulse tracking-widest">
+              SYSTEM_ONLINE
+            </span>
+          </section>
+        </div>
+      </main>
     </div>
   );
 }

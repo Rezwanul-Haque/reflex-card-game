@@ -1,1 +1,70 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@200;400;500;600;700;800&display=swap');
+
+@theme {
+  --color-bg: #0e0e13;
+  --color-surface: #0e0e13;
+  --color-surface-low: #131319;
+  --color-surface-mid: #19191f;
+  --color-surface-high: #1f1f26;
+  --color-surface-highest: #25252d;
+  --color-surface-bright: #2c2b33;
+  --color-surface-sunken: #000000;
+
+  --color-primary: #81ecff;
+  --color-primary-dim: #00d4ec;
+  --color-primary-container: #00e3fd;
+  --color-on-primary: #005762;
+
+  --color-secondary: #ff7073;
+  --color-secondary-dim: #e90036;
+  --color-secondary-container: #bf002a;
+  --color-on-secondary: #49000a;
+
+  --color-tertiary: #ac89ff;
+  --color-tertiary-dim: #874cff;
+  --color-tertiary-container: #7000ff;
+  --color-on-tertiary: #290067;
+
+  --color-on-surface: #f9f5fd;
+  --color-on-surface-variant: #acaab1;
+  --color-outline: #76747b;
+  --color-outline-variant: #48474d;
+
+  --color-error: #ff716c;
+  --color-error-dim: #d7383b;
+
+  --font-family-headline: 'Space Grotesk', sans-serif;
+  --font-family-body: 'Manrope', sans-serif;
+}
+
+body {
+  font-family: var(--font-family-body);
+  background-color: var(--color-bg);
+  color: var(--color-on-surface);
+}
+
+.font-headline {
+  font-family: var(--font-family-headline);
+}
+
+.neon-glow-primary {
+  transition: box-shadow 0.2s ease;
+}
+.neon-glow-primary:hover {
+  box-shadow: 0 0 15px rgba(129, 236, 255, 0.4);
+}
+
+.neon-glow-secondary {
+  transition: box-shadow 0.2s ease;
+}
+.neon-glow-secondary:hover {
+  box-shadow: 0 0 15px rgba(255, 112, 115, 0.4);
+}
+
+.neon-glow-tertiary {
+  transition: box-shadow 0.2s ease;
+}
+.neon-glow-tertiary:hover {
+  box-shadow: 0 0 15px rgba(172, 137, 255, 0.4);
+}
