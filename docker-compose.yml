@@ -10,6 +10,7 @@ services:
       - ALLOWED_ORIGIN=http://localhost:5173
     volumes:
       - ./server:/app
+      - server-data:/app/data
     restart: unless-stopped
 
   client:
@@ -26,3 +27,6 @@ services:
     depends_on:
       - server
     restart: unless-stopped
+
+volumes:
+  server-data:

@@ -64,11 +64,12 @@ type CardFlipMsg struct {
 }
 
 type RoundResultMsg struct {
-	Type   string         `json:"type"`
-	Winner string         `json:"winner"`
-	Loser  string         `json:"loser,omitempty"`
-	Reason string         `json:"reason"`
-	Scores map[string]int `json:"scores"`
+	Type          string         `json:"type"`
+	Winner        string         `json:"winner"`
+	Loser         string         `json:"loser,omitempty"`
+	Reason        string         `json:"reason"`
+	Scores        map[string]int `json:"scores"`
+	ReactionTimes map[string]int `json:"reaction_times,omitempty"`
 }
 
 type GameOverMsg struct {

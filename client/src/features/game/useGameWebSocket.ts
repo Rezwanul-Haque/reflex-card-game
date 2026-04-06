@@ -18,6 +18,8 @@ interface GameState {
   roundResult: RoundResultMessage | null;
   winner: string | null;
   error: string | null;
+  /** Per-player reaction history from server (keyed by player name) */
+  reactionHistory: Record<string, number[]>;
 }
 
 const initialState: GameState = {
@@ -32,6 +34,7 @@ const initialState: GameState = {
   roundResult: null,
   winner: null,
   error: null,
+  reactionHistory: {},
 };
 
 export function useGameWebSocket() {
@@ -69,6 +72,10 @@ export function useGameWebSocket() {
             opponent: msg.opponent,
             playerNumber: msg.player_number,
             scores: { [prev.playerName!]: 0, [msg.opponent]: 0 },
+            reactionHistory: {
+              [prev.playerName!]: [],
+              [msg.opponent]: [],
+            },
           }));
           break;
 
@@ -83,12 +90,22 @@ export function useGameWebSocket() {
           break;
 
         case 'round_result':
-          setState((prev) => ({
-            ...prev,
-            phase: 'round_end',
-            roundResult: msg,
-            scores: msg.scores,
-          }));
+          setState((prev) => {
+            // Append server-side reaction times to history
+            const newHistory = { ...prev.reactionHistory };
+            if (msg.reaction_times) {
+              for (const [player, ms] of Object.entries(msg.reaction_times)) {
+                newHistory[player] = [...(newHistory[player] || []), ms];
+              }
+            }
+            return {
+              ...prev,
+              phase: 'round_end',
+              roundResult: msg,
+              scores: msg.scores,
+              reactionHistory: newHistory,
+            };
+          });
           break;
 
         case 'game_over':

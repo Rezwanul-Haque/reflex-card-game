@@ -15,23 +15,25 @@ const (
 )
 
 type RoundResult struct {
-	Winner string `json:"winner"`
-	Loser  string `json:"loser,omitempty"`
-	Reason string `json:"reason"`
+	Winner        string         `json:"winner"`
+	Loser         string         `json:"loser,omitempty"`
+	Reason        string         `json:"reason"`
+	ReactionTimes map[string]int `json:"reaction_times"`
 }
 
 type Game struct {
-	mu          sync.Mutex
-	RoomID      string
-	Players     [2]string
-	Scores      map[string]int
-	State       GameState
-	Deck        *Deck
-	CurrentCard *Card
-	CardNumber  int
-	RoundsToWin int
-	ClickTimes  map[string]int64
-	HasClicked  map[string]bool
+	mu           sync.Mutex
+	RoomID       string
+	Players      [2]string
+	Scores       map[string]int
+	State        GameState
+	Deck         *Deck
+	CurrentCard  *Card
+	CardNumber   int
+	RoundsToWin  int
+	ClickTimes   map[string]int64
+	HasClicked   map[string]bool
+	CardFlipTime int64
 }
 
 func NewGame(roomID string, player1, player2 string, roundsToWin int) *Game {
@@ -69,6 +71,7 @@ func (g *Game) FlipCard() (*Card, int, bool) {
 	}
 	g.CurrentCard = &card
 	g.CardNumber++
+	g.CardFlipTime = nanoNow()
 	g.ClickTimes = make(map[string]int64)
 	g.HasClicked = make(map[string]bool)
 	return &card, g.CardNumber, true
@@ -97,9 +100,10 @@ func (g *Game) HandleClick(player string, cardNumber int) *RoundResult {
 		g.Scores[opponent]++
 		g.State = GameStateRoundEnd
 		return &RoundResult{
-			Winner: opponent,
-			Loser:  player,
-			Reason: "early_click",
+			Winner:        opponent,
+			Loser:         player,
+			Reason:        "early_click",
+			ReactionTimes: g.reactionTimes(),
 		}
 	}
 
@@ -107,21 +111,24 @@ func (g *Game) HandleClick(player string, cardNumber int) *RoundResult {
 	opponent := g.GetOpponent(player)
 	if g.HasClicked[opponent] {
 		// Both clicked on Ace — earliest wins
+		rt := g.reactionTimes()
 		if g.ClickTimes[player] < g.ClickTimes[opponent] {
 			g.Scores[player]++
 			g.State = GameStateRoundEnd
 			return &RoundResult{
-				Winner: player,
-				Loser:  opponent,
-				Reason: "ace_click",
+				Winner:        player,
+				Loser:         opponent,
+				Reason:        "ace_click",
+				ReactionTimes: rt,
 			}
 		}
 		g.Scores[opponent]++
 		g.State = GameStateRoundEnd
 		return &RoundResult{
-			Winner: opponent,
-			Loser:  player,
-			Reason: "ace_click",
+			Winner:        opponent,
+			Loser:         player,
+			Reason:        "ace_click",
+			ReactionTimes: rt,
 		}
 	}
 
@@ -154,9 +161,10 @@ func (g *Game) ResolveAceTimeout() *RoundResult {
 	g.Scores[clicker]++
 	g.State = GameStateRoundEnd
 	return &RoundResult{
-		Winner: clicker,
-		Loser:  opponent,
-		Reason: "ace_click",
+		Winner:        clicker,
+		Loser:         opponent,
+		Reason:        "ace_click",
+		ReactionTimes: g.reactionTimes(),
 	}
 }
 
@@ -186,4 +194,17 @@ func (g *Game) PrepareNextRound() {
 
 func nanoNow() int64 {
 	return time.Now().UnixNano()
+}
+
+// reactionTimes returns reaction times in milliseconds for players who clicked.
+func (g *Game) reactionTimes() map[string]int {
+	rt := make(map[string]int)
+	for player, clickTime := range g.ClickTimes {
+		ms := int((clickTime - g.CardFlipTime) / 1_000_000)
+		if ms < 0 {
+			ms = 0
+		}
+		rt[player] = ms
+	}
+	return rt
 }

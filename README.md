@@ -1,10 +1,11 @@
 # Reflex Card Game
 
-A real-time two-player reflex card game. Cards appear one by one — when an Ace appears, the first player to slap wins the round. Click too early on a non-Ace and you lose.
+A real-time two-player reflex card game. Cards appear one by one — when an Ace appears, the first player to slap wins the round. 
+Click too early on a non-Ace and you lose.
 
 ## Live Demo
 
-> _TODO: Add deployed URL_
+> https://reflex-card-game.onrender.com/
 
 ## Architecture
 
@@ -12,9 +13,12 @@ A real-time two-player reflex card game. Cards appear one by one — when an Ace
 Browser A ──WebSocket──┐
                        ├── Go Echo Server (vertical slices)
 Browser B ──WebSocket──┘       │
-                               ├── /api/rooms      (REST — room management)
-                               ├── /ws              (WebSocket — real-time game)
-                               ├── /health          (health check)
+                               ├── /api/rooms        (REST — room management)
+                               ├── /api/rooms/active  (REST — live room listing)
+                               ├── /api/leaderboard   (REST — recent match results)
+                               ├── /ws                (WebSocket — real-time game)
+                               ├── /health            (health check)
+                               ├── SQLite (leaderboard persistence)
                                └── serves React static files (production)
 ```
 
@@ -32,12 +36,22 @@ server/internal/
 │   │   ├── repository.go   # In-memory implementation
 │   │   ├── service.go      # Business logic
 │   │   └── handler.go      # HTTP handlers
-│   └── game/           # Game engine, WebSocket handler
-│       ├── card.go         # Card/Deck domain
-│       ├── engine.go       # Game state machine
-│       ├── service.go      # Game loop orchestration
-│       └── handler.go      # WebSocket handler
-├── infra/              # WebSocket connection wrapper, message types
+│   ├── game/           # Game engine, WebSocket handler
+│   │   ├── card.go         # Card/Deck domain
+│   │   ├── engine.go       # Game state machine
+│   │   ├── service.go      # Game loop + active rooms + leaderboard hooks
+│   │   └── handler.go      # WebSocket handler
+│   └── leaderboard/    # Match history
+│       ├── entity.go       # Entry domain model
+│       ├── repository.go   # Repository interface (impl in infra/db)
+│       ├── service.go      # Business logic
+│       └── handler.go      # REST endpoint
+├── infra/              # Infrastructure adapters
+│   ├── ws.go               # WebSocket connection wrapper, message types
+│   └── db/                 # Database layer
+│       ├── sqlite.go           # Connection setup (Open, WAL mode)
+│       ├── migrations.go       # Schema migrations
+│       └── leaderboard_repo.go # SQLite implementation of leaderboard.Repository
 └── tests/
     ├── unit/           # Unit tests
     └── e2e/            # WebSocket integration tests
@@ -62,6 +76,7 @@ client/src/
 | Frontend | React + TypeScript + Vite | Component-based UI, type safety, fast dev/build |
 | API calls | TanStack Query | Caching, loading/error states, mutations for room CRUD |
 | Real-time | WebSocket (gorilla/websocket) | Bidirectional, low-latency game events |
+| Database | SQLite (modernc.org/sqlite) | Leaderboard persistence, pure Go (no CGO), zero config |
 | Styling | Tailwind CSS | Rapid UI development |
 | Animations | Framer Motion | Card flip animations |
 | Infra | Docker + docker-compose | Reproducible dev and prod environments |
@@ -74,7 +89,7 @@ client/src/
 
 3. **Clean architecture within slices** — Domain entities have zero framework dependencies. Business logic is testable without HTTP/WebSocket concerns.
 
-4. **In-memory repositories** — Games are ephemeral. Repository interfaces make it trivial to swap in Redis/DB later without touching business logic.
+4. **SQLite leaderboard** — Match results persist across restarts via SQLite (pure Go driver, no CGO). The lobby shows the last 10 matches and currently active rooms in real-time.
 
 5. **Single binary deployment** — Go serves both the API/WebSocket and the built React static files. One container, one port.
 
@@ -83,7 +98,7 @@ client/src/
 ## Tradeoffs
 
 - **Network latency** — A player with lower latency has a slight advantage. Latency compensation would add significant complexity for minimal gain at this scale.
-- **No persistence** — Server restart loses all active games. Acceptable for a demo; repository interfaces allow easy Redis/DB addition.
+- **Leaderboard only** — SQLite persists match results but active games are still in-memory. Server restart loses in-progress games.
 - **No authentication** — Players are identified by name only. Would add JWT/session tokens for production.
 - **Single server** — No horizontal scaling. Would need a shared state store (Redis) for multi-instance deployment.
 

@@ -27,6 +27,7 @@ export interface RoundResultMessage {
   loser?: string;
   reason: 'ace_click' | 'early_click';
   scores: Record<string, number>;
+  reaction_times?: Record<string, number>;
 }
 
 export interface GameOverMessage {

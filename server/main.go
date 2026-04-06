@@ -7,11 +7,15 @@ import (
 	"os/signal"
 	"time"
 
+	"net/http"
+
 	"github.com/labstack/echo/v4"
 	"github.com/rezwanul-haque/reflex-card-game/server/internal/core"
 	"github.com/rezwanul-haque/reflex-card-game/server/internal/features/game"
 	"github.com/rezwanul-haque/reflex-card-game/server/internal/features/health"
+	"github.com/rezwanul-haque/reflex-card-game/server/internal/features/leaderboard"
 	"github.com/rezwanul-haque/reflex-card-game/server/internal/features/room"
+	"github.com/rezwanul-haque/reflex-card-game/server/internal/infra/db"
 )
 
 func main() {
@@ -23,15 +27,35 @@ func main() {
 	// Middleware
 	core.SetupMiddleware(e, cfg)
 
+	// Database
+	database, err := db.Open("./data/ace_reaction.db")
+	if err != nil {
+		log.Fatalf("failed to open database: %v", err)
+	}
+	if err := db.Migrate(database); err != nil {
+		log.Fatalf("failed to run migrations: %v", err)
+	}
+
 	// Dependencies
 	roomRepo := room.NewMemoryRoomRepository()
 	roomSvc := room.NewRoomService(roomRepo)
-	gameSvc := game.NewGameService(cfg)
+
+	lbRepo := db.NewLeaderboardRepo(database)
+	lbSvc := leaderboard.NewService(lbRepo)
+
+	gameSvc := game.NewGameService(cfg, lbSvc)
 
 	// Register routes
 	api := e.Group("/api")
 	roomHandler := room.NewRoomHandler(roomSvc)
 	roomHandler.RegisterRoutes(api)
+
+	lbHandler := leaderboard.NewHandler(lbSvc)
+	lbHandler.RegisterRoutes(api)
+
+	api.GET("/rooms/active", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, gameSvc.GetActiveRooms())
+	})
 
 	wsHandler := game.NewWSHandler(roomSvc, gameSvc)
 	wsHandler.RegisterRoutes(e)

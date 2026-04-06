@@ -28,6 +28,7 @@ function App() {
         playerName={game.playerName!}
         scores={game.scores}
         error={game.error}
+        reactionHistory={game.reactionHistory}
         onPlayAgain={game.disconnect}
       />
     );
@@ -44,6 +45,7 @@ function App() {
         cardNumber={game.cardNumber}
         scores={game.scores}
         roundResult={game.roundResult}
+        reactionHistory={game.reactionHistory}
         onSlap={game.sendClick}
       />
     );

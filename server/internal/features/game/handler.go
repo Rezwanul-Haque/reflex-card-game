@@ -72,6 +72,7 @@ func (h *WSHandler) HandleWebSocket(c echo.Context) error {
 		h.mu.Lock()
 		if waiting, ok := h.waitPool[roomID]; ok && waiting.PlayerName == playerName {
 			delete(h.waitPool, roomID)
+			h.gameService.RemoveWaiting(roomID)
 		}
 		h.mu.Unlock()
 	}()
@@ -83,6 +84,8 @@ func (h *WSHandler) HandleWebSocket(c echo.Context) error {
 		// First player — wait for opponent
 		h.waitPool[roomID] = wsConn
 		h.mu.Unlock()
+
+		h.gameService.AddWaiting(roomID, playerName)
 
 		wsConn.SendJSON(infra.WaitingMsg{
 			Type:   "waiting",
@@ -97,6 +100,8 @@ func (h *WSHandler) HandleWebSocket(c echo.Context) error {
 	// Second player — start the game
 	delete(h.waitPool, roomID)
 	h.mu.Unlock()
+
+	h.gameService.RemoveWaiting(roomID)
 
 	_ = r // Room is validated
 

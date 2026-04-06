@@ -1,6 +1,11 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { apiRequest } from '../../infra/api-client';
-import type { CreateRoomResponse, GetRoomResponse } from './types';
+import type {
+  ActiveRoom,
+  CreateRoomResponse,
+  GetRoomResponse,
+  LeaderboardEntry,
+} from './types';
 
 export function useCreateRoom() {
   return useMutation({
@@ -14,5 +19,21 @@ export function useGetRoom(roomId: string | null) {
     queryKey: ['room', roomId],
     queryFn: () => apiRequest<GetRoomResponse>(`/rooms/${roomId}`),
     enabled: !!roomId,
+  });
+}
+
+export function useLeaderboard() {
+  return useQuery({
+    queryKey: ['leaderboard'],
+    queryFn: () => apiRequest<LeaderboardEntry[]>('/leaderboard'),
+    refetchInterval: 10_000,
+  });
+}
+
+export function useActiveRooms() {
+  return useQuery({
+    queryKey: ['activeRooms'],
+    queryFn: () => apiRequest<ActiveRoom[]>('/rooms/active'),
+    refetchInterval: 5_000,
   });
 }

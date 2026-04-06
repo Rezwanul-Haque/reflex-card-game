@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/rezwanul-haque/reflex-card-game/server/internal/core"
+	"github.com/rezwanul-haque/reflex-card-game/server/internal/features/leaderboard"
 	"github.com/rezwanul-haque/reflex-card-game/server/internal/infra"
 )
 
@@ -16,17 +17,72 @@ type GameRoom struct {
 	StopChan    chan struct{}
 }
 
-type GameService struct {
-	mu    sync.RWMutex
-	rooms map[string]*GameRoom
-	cfg   *core.Config
+type WaitingRoom struct {
+	PlayerName string
 }
 
-func NewGameService(cfg *core.Config) *GameService {
+type GameService struct {
+	mu          sync.RWMutex
+	rooms       map[string]*GameRoom
+	waiting     map[string]*WaitingRoom
+	cfg         *core.Config
+	leaderboard *leaderboard.Service
+}
+
+func NewGameService(cfg *core.Config, lb *leaderboard.Service) *GameService {
 	return &GameService{
-		rooms: make(map[string]*GameRoom),
-		cfg:   cfg,
+		rooms:       make(map[string]*GameRoom),
+		waiting:     make(map[string]*WaitingRoom),
+		cfg:         cfg,
+		leaderboard: lb,
 	}
+}
+
+func (s *GameService) AddWaiting(roomID, playerName string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.waiting[roomID] = &WaitingRoom{PlayerName: playerName}
+}
+
+func (s *GameService) RemoveWaiting(roomID string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	delete(s.waiting, roomID)
+}
+
+type ActiveRoom struct {
+	RoomID  string   `json:"room_id"`
+	Players []string `json:"players"`
+	Status  string   `json:"status"`
+}
+
+func (s *GameService) GetActiveRooms() []ActiveRoom {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	rooms := make([]ActiveRoom, 0, len(s.waiting)+len(s.rooms))
+
+	// Waiting rooms (1 player, not yet started)
+	for id, wr := range s.waiting {
+		rooms = append(rooms, ActiveRoom{
+			RoomID:  id,
+			Players: []string{wr.PlayerName},
+			Status:  "waiting",
+		})
+	}
+
+	// Active game rooms
+	for id, gr := range s.rooms {
+		players := make([]string, len(gr.Game.Players))
+		copy(players, gr.Game.Players[:])
+		rooms = append(rooms, ActiveRoom{
+			RoomID:  id,
+			Players: players,
+			Status:  "playing",
+		})
+	}
+
+	return rooms
 }
 
 func (s *GameService) CreateGame(roomID, player1, player2 string, conns map[string]*infra.Connection) {
@@ -115,6 +171,11 @@ func (s *GameService) HandleDisconnect(roomID, player string) {
 		})
 	}
 
+	// Record to leaderboard if a real match was played (at least 1 round scored)
+	if s.leaderboard != nil && (g.Scores[player]+g.Scores[opponent]) > 0 {
+		s.leaderboard.RecordGameResult(opponent, player, g.Scores)
+	}
+
 	s.mu.Lock()
 	delete(s.rooms, roomID)
 	s.mu.Unlock()
@@ -199,12 +260,16 @@ func (s *GameService) runGameLoop(roomID string) {
 		if g.State == GameStateRoundEnd {
 			over, winner := g.IsGameOver()
 			if over {
+				loser := g.GetOpponent(winner)
 				g.Unlock()
 				s.broadcast(gameRoom, infra.GameOverMsg{
 					Type:   "game_over",
 					Winner: winner,
 					Scores: g.Scores,
 				})
+				if s.leaderboard != nil {
+					s.leaderboard.RecordGameResult(winner, loser, g.Scores)
+				}
 				s.cleanup(roomID)
 				return
 			}
@@ -234,11 +299,12 @@ func anyClicked(g *Game) bool {
 
 func (s *GameService) broadcastRoundResult(gameRoom *GameRoom, result *RoundResult) {
 	s.broadcast(gameRoom, infra.RoundResultMsg{
-		Type:   "round_result",
-		Winner: result.Winner,
-		Loser:  result.Loser,
-		Reason: result.Reason,
-		Scores: gameRoom.Game.Scores,
+		Type:          "round_result",
+		Winner:        result.Winner,
+		Loser:         result.Loser,
+		Reason:        result.Reason,
+		Scores:        gameRoom.Game.Scores,
+		ReactionTimes: result.ReactionTimes,
 	})
 }
 

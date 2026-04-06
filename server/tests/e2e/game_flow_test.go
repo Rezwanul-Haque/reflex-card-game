@@ -23,7 +23,7 @@ func setupTestServer() (*echo.Echo, *room.RoomService, *game.GameService) {
 	repo := room.NewMemoryRoomRepository()
 	roomSvc := room.NewRoomService(repo)
 	cfg := core.LoadConfig()
-	gameSvc := game.NewGameService(cfg)
+	gameSvc := game.NewGameService(cfg, nil)
 
 	api := e.Group("/api")
 	roomHandler := room.NewRoomHandler(roomSvc)

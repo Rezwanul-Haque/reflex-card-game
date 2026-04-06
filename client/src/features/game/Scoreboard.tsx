@@ -6,21 +6,39 @@ interface ScoreboardProps {
 
 export function Scoreboard({ playerName, opponent, scores }: ScoreboardProps) {
   return (
-    <div className="flex gap-8 items-center justify-center text-lg">
-      <div className="flex flex-col items-center">
-        <span className="text-sm text-gray-400 uppercase tracking-wide">You</span>
-        <span className="font-bold text-2xl text-white">{playerName}</span>
-        <span className="text-4xl font-mono font-bold text-emerald-400">
-          {scores[playerName] ?? 0}
-        </span>
+    <div className="w-full grid grid-cols-3 items-center gap-4 md:gap-6">
+      {/* Player HUD */}
+      <div className="flex items-center gap-3 bg-surface-low p-3 md:p-4 border-l-4 border-primary">
+        <div className="flex flex-col min-w-0">
+          <span className="font-headline text-[10px] text-primary uppercase tracking-widest truncate">
+            {playerName}
+          </span>
+          <span className="font-headline text-2xl md:text-4xl font-black text-on-surface">
+            {scores[playerName] ?? 0}
+          </span>
+        </div>
       </div>
-      <div className="text-gray-500 text-2xl font-bold">VS</div>
-      <div className="flex flex-col items-center">
-        <span className="text-sm text-gray-400 uppercase tracking-wide">Opponent</span>
-        <span className="font-bold text-2xl text-white">{opponent}</span>
-        <span className="text-4xl font-mono font-bold text-rose-400">
-          {scores[opponent] ?? 0}
+
+      {/* Center: VS indicator */}
+      <div className="flex flex-col items-center justify-center">
+        <span className="font-headline text-[10px] text-tertiary uppercase tracking-widest">
+          VERSUS
         </span>
+        <div className="relative w-24 md:w-36 h-1 bg-surface-highest mt-2 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary via-tertiary to-secondary" />
+        </div>
+      </div>
+
+      {/* Opponent HUD */}
+      <div className="flex items-center justify-end gap-3 bg-surface-low p-3 md:p-4 border-r-4 border-secondary">
+        <div className="flex flex-col items-end min-w-0">
+          <span className="font-headline text-[10px] text-secondary uppercase tracking-widest truncate">
+            {opponent}
+          </span>
+          <span className="font-headline text-2xl md:text-4xl font-black text-on-surface">
+            {scores[opponent] ?? 0}
+          </span>
+        </div>
       </div>
     </div>
   );
