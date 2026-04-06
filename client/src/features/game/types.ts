@@ -13,6 +13,7 @@ export interface GameStartMessage {
   type: 'game_start';
   opponent: string;
   player_number: number;
+  trigger_rank: string;
 }
 
 export interface CardFlipMessage {
@@ -25,7 +26,7 @@ export interface RoundResultMessage {
   type: 'round_result';
   winner: string;
   loser?: string;
-  reason: 'ace_click' | 'early_click';
+  reason: 'trigger_click' | 'early_click';
   scores: Record<string, number>;
   reaction_times?: Record<string, number>;
 }

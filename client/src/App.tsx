@@ -46,6 +46,7 @@ function App() {
         scores={game.scores}
         roundResult={game.roundResult}
         reactionHistory={game.reactionHistory}
+        triggerRank={game.triggerRank}
         onSlap={game.sendClick}
       />
     );

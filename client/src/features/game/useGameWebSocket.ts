@@ -18,6 +18,7 @@ interface GameState {
   roundResult: RoundResultMessage | null;
   winner: string | null;
   error: string | null;
+  triggerRank: string;
   /** Per-player reaction history from server (keyed by player name) */
   reactionHistory: Record<string, number[]>;
 }
@@ -34,6 +35,7 @@ const initialState: GameState = {
   roundResult: null,
   winner: null,
   error: null,
+  triggerRank: 'A',
   reactionHistory: {},
 };
 
@@ -71,6 +73,7 @@ export function useGameWebSocket() {
             phase: 'playing',
             opponent: msg.opponent,
             playerNumber: msg.player_number,
+            triggerRank: msg.trigger_rank,
             scores: { [prev.playerName!]: 0, [msg.opponent]: 0 },
             reactionHistory: {
               [prev.playerName!]: [],

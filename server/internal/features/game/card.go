@@ -34,8 +34,8 @@ type Card struct {
 	Rank Rank `json:"rank"`
 }
 
-func (c Card) IsAce() bool {
-	return c.Rank == RankAce
+func (c Card) IsTrigger(rank Rank) bool {
+	return c.Rank == rank
 }
 
 type Deck struct {

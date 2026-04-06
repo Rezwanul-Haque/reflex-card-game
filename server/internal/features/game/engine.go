@@ -34,9 +34,10 @@ type Game struct {
 	ClickTimes   map[string]int64
 	HasClicked   map[string]bool
 	CardFlipTime int64
+	TriggerRank  Rank
 }
 
-func NewGame(roomID string, player1, player2 string, roundsToWin int) *Game {
+func NewGame(roomID string, player1, player2 string, roundsToWin int, triggerRank Rank) *Game {
 	deck := NewDeck()
 	deck.Shuffle()
 
@@ -47,6 +48,7 @@ func NewGame(roomID string, player1, player2 string, roundsToWin int) *Game {
 		State:       GameStatePlaying,
 		Deck:        deck,
 		RoundsToWin: roundsToWin,
+		TriggerRank: triggerRank,
 		ClickTimes:  make(map[string]int64),
 		HasClicked:  make(map[string]bool),
 	}
@@ -94,7 +96,7 @@ func (g *Game) HandleClick(player string, cardNumber int) *RoundResult {
 	g.HasClicked[player] = true
 	g.ClickTimes[player] = nanoNow()
 
-	if !g.CurrentCard.IsAce() {
+	if !g.CurrentCard.IsTrigger(g.TriggerRank) {
 		// Clicked on non-Ace — this player loses the round
 		opponent := g.GetOpponent(player)
 		g.Scores[opponent]++
@@ -118,7 +120,7 @@ func (g *Game) HandleClick(player string, cardNumber int) *RoundResult {
 			return &RoundResult{
 				Winner:        player,
 				Loser:         opponent,
-				Reason:        "ace_click",
+				Reason:        "trigger_click",
 				ReactionTimes: rt,
 			}
 		}
@@ -127,7 +129,7 @@ func (g *Game) HandleClick(player string, cardNumber int) *RoundResult {
 		return &RoundResult{
 			Winner:        opponent,
 			Loser:         player,
-			Reason:        "ace_click",
+			Reason:        "trigger_click",
 			ReactionTimes: rt,
 		}
 	}
@@ -139,7 +141,7 @@ func (g *Game) HandleClick(player string, cardNumber int) *RoundResult {
 // ResolveAceTimeout is called after a short timeout when an Ace is showing.
 // If only one player has clicked, they win the round.
 func (g *Game) ResolveAceTimeout() *RoundResult {
-	if g.State != GameStatePlaying || g.CurrentCard == nil || !g.CurrentCard.IsAce() {
+	if g.State != GameStatePlaying || g.CurrentCard == nil || !g.CurrentCard.IsTrigger(g.TriggerRank) {
 		return nil
 	}
 
@@ -163,7 +165,7 @@ func (g *Game) ResolveAceTimeout() *RoundResult {
 	return &RoundResult{
 		Winner:        clicker,
 		Loser:         opponent,
-		Reason:        "ace_click",
+		Reason:        "trigger_click",
 		ReactionTimes: g.reactionTimes(),
 	}
 }

@@ -4,6 +4,7 @@ import type { Card as CardType } from './types';
 interface CardProps {
   card: CardType | null;
   cardNumber: number;
+  triggerRank?: string;
 }
 
 const suitSymbols: Record<string, string> = {
@@ -20,8 +21,8 @@ const suitColors: Record<string, string> = {
   spades: 'text-surface',
 };
 
-export function Card({ card, cardNumber }: CardProps) {
-  const isAce = card?.rank === 'A';
+export function Card({ card, cardNumber, triggerRank = 'A' }: CardProps) {
+  const isTrigger = card?.rank === triggerRank;
 
   return (
     <div className="relative flex items-center justify-center">
@@ -51,7 +52,7 @@ export function Card({ card, cardNumber }: CardProps) {
             {/* Inner border frame */}
             <div
               className={`absolute inset-0 border-[6px] md:border-[8px] border-surface ${
-                isAce
+                isTrigger
                   ? 'shadow-[0_0_40px_rgba(129,236,255,0.3)]'
                   : 'shadow-[0_0_20px_rgba(0,0,0,0.4)]'
               }`}
@@ -77,9 +78,9 @@ export function Card({ card, cardNumber }: CardProps) {
                 >
                   {suitSymbols[card.suit]}
                 </span>
-                {isAce && (
+                {isTrigger && (
                   <span className="font-headline text-[10px] md:text-xs uppercase font-black tracking-widest text-surface mt-2">
-                    KINETIC_ACE
+                    STRIKE_NOW
                   </span>
                 )}
               </div>
@@ -98,7 +99,7 @@ export function Card({ card, cardNumber }: CardProps) {
             </div>
 
             {/* Ace pulse effect */}
-            {isAce && (
+            {isTrigger && (
               <div className="absolute -inset-2 border border-primary/50 opacity-30 animate-pulse" />
             )}
           </motion.div>

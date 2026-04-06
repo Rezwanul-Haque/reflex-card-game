@@ -9,7 +9,7 @@ import (
 )
 
 func TestNewGame(t *testing.T) {
-	g := game.NewGame("room1", "Alice", "Bob", 3)
+	g := game.NewGame("room1", "Alice", "Bob", 3, game.RankAce)
 
 	assert.Equal(t, "room1", g.RoomID)
 	assert.Equal(t, [2]string{"Alice", "Bob"}, g.Players)
@@ -20,7 +20,7 @@ func TestNewGame(t *testing.T) {
 }
 
 func TestFlipCard(t *testing.T) {
-	g := game.NewGame("room1", "Alice", "Bob", 3)
+	g := game.NewGame("room1", "Alice", "Bob", 3, game.RankAce)
 
 	card, num, ok := g.FlipCard()
 	require.True(t, ok)
@@ -30,7 +30,7 @@ func TestFlipCard(t *testing.T) {
 }
 
 func TestHandleClickOnNonAce(t *testing.T) {
-	g := game.NewGame("room1", "Alice", "Bob", 3)
+	g := game.NewGame("room1", "Alice", "Bob", 3, game.RankAce)
 
 	// Force a non-ace card
 	nonAce := game.Card{Suit: game.SuitHearts, Rank: game.Rank7}
@@ -47,7 +47,7 @@ func TestHandleClickOnNonAce(t *testing.T) {
 }
 
 func TestHandleClickOnAceFirstPlayer(t *testing.T) {
-	g := game.NewGame("room1", "Alice", "Bob", 3)
+	g := game.NewGame("room1", "Alice", "Bob", 3, game.RankAce)
 
 	ace := game.Card{Suit: game.SuitSpades, Rank: game.RankAce}
 	g.CurrentCard = &ace
@@ -60,7 +60,7 @@ func TestHandleClickOnAceFirstPlayer(t *testing.T) {
 }
 
 func TestHandleClickOnAceBothPlayers(t *testing.T) {
-	g := game.NewGame("room1", "Alice", "Bob", 3)
+	g := game.NewGame("room1", "Alice", "Bob", 3, game.RankAce)
 
 	ace := game.Card{Suit: game.SuitSpades, Rank: game.RankAce}
 	g.CurrentCard = &ace
@@ -74,12 +74,12 @@ func TestHandleClickOnAceBothPlayers(t *testing.T) {
 	require.NotNil(t, result)
 	assert.Equal(t, "Alice", result.Winner)
 	assert.Equal(t, "Bob", result.Loser)
-	assert.Equal(t, "ace_click", result.Reason)
+	assert.Equal(t, "trigger_click", result.Reason)
 	assert.Equal(t, 1, g.Scores["Alice"])
 }
 
 func TestHandleDoubleClick(t *testing.T) {
-	g := game.NewGame("room1", "Alice", "Bob", 3)
+	g := game.NewGame("room1", "Alice", "Bob", 3, game.RankAce)
 
 	nonAce := game.Card{Suit: game.SuitHearts, Rank: game.Rank7}
 	g.CurrentCard = &nonAce
@@ -95,7 +95,7 @@ func TestHandleDoubleClick(t *testing.T) {
 }
 
 func TestResolveAceTimeoutOneClicker(t *testing.T) {
-	g := game.NewGame("room1", "Alice", "Bob", 3)
+	g := game.NewGame("room1", "Alice", "Bob", 3, game.RankAce)
 
 	ace := game.Card{Suit: game.SuitSpades, Rank: game.RankAce}
 	g.CurrentCard = &ace
@@ -109,11 +109,11 @@ func TestResolveAceTimeoutOneClicker(t *testing.T) {
 	require.NotNil(t, result)
 	assert.Equal(t, "Alice", result.Winner)
 	assert.Equal(t, "Bob", result.Loser)
-	assert.Equal(t, "ace_click", result.Reason)
+	assert.Equal(t, "trigger_click", result.Reason)
 }
 
 func TestResolveAceTimeoutNoClickers(t *testing.T) {
-	g := game.NewGame("room1", "Alice", "Bob", 3)
+	g := game.NewGame("room1", "Alice", "Bob", 3, game.RankAce)
 
 	ace := game.Card{Suit: game.SuitSpades, Rank: game.RankAce}
 	g.CurrentCard = &ace
@@ -125,7 +125,7 @@ func TestResolveAceTimeoutNoClickers(t *testing.T) {
 }
 
 func TestIsGameOver(t *testing.T) {
-	g := game.NewGame("room1", "Alice", "Bob", 3)
+	g := game.NewGame("room1", "Alice", "Bob", 3, game.RankAce)
 
 	// Not over yet
 	over, _ := g.IsGameOver()
@@ -140,13 +140,13 @@ func TestIsGameOver(t *testing.T) {
 }
 
 func TestGetOpponent(t *testing.T) {
-	g := game.NewGame("room1", "Alice", "Bob", 3)
+	g := game.NewGame("room1", "Alice", "Bob", 3, game.RankAce)
 	assert.Equal(t, "Bob", g.GetOpponent("Alice"))
 	assert.Equal(t, "Alice", g.GetOpponent("Bob"))
 }
 
 func TestPrepareNextRound(t *testing.T) {
-	g := game.NewGame("room1", "Alice", "Bob", 3)
+	g := game.NewGame("room1", "Alice", "Bob", 3, game.RankAce)
 	g.State = game.GameStateRoundEnd
 	g.CurrentCard = &game.Card{Suit: game.SuitHearts, Rank: game.Rank7}
 	g.HasClicked["Alice"] = true
@@ -158,7 +158,7 @@ func TestPrepareNextRound(t *testing.T) {
 }
 
 func TestHandleClickOnNilCard(t *testing.T) {
-	g := game.NewGame("room1", "Alice", "Bob", 3)
+	g := game.NewGame("room1", "Alice", "Bob", 3, game.RankAce)
 	g.CurrentCard = nil
 
 	result := g.HandleClick("Alice", 1)
@@ -166,7 +166,7 @@ func TestHandleClickOnNilCard(t *testing.T) {
 }
 
 func TestHandleClickStaleCardNumber(t *testing.T) {
-	g := game.NewGame("room1", "Alice", "Bob", 3)
+	g := game.NewGame("room1", "Alice", "Bob", 3, game.RankAce)
 
 	nonAce := game.Card{Suit: game.SuitHearts, Rank: game.Rank7}
 	g.CurrentCard = &nonAce
@@ -183,7 +183,7 @@ func TestHandleClickStaleCardNumber(t *testing.T) {
 }
 
 func TestHandleClickWhenNotPlaying(t *testing.T) {
-	g := game.NewGame("room1", "Alice", "Bob", 3)
+	g := game.NewGame("room1", "Alice", "Bob", 3, game.RankAce)
 	g.State = game.GameStateRoundEnd
 	g.CurrentCard = &game.Card{Suit: game.SuitHearts, Rank: game.RankAce}
 

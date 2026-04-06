@@ -17,7 +17,28 @@ interface GameProps {
   scores: Record<string, number>;
   roundResult: RoundResultMessage | null;
   reactionHistory: Record<string, number[]>;
+  triggerRank: string;
   onSlap: () => void;
+}
+
+const rankLabels: Record<string, string> = {
+  A: 'an Ace',
+  K: 'a King',
+  Q: 'a Queen',
+  J: 'a Jack',
+  '10': 'a 10',
+  '9': 'a 9',
+  '8': 'an 8',
+  '7': 'a 7',
+  '6': 'a 6',
+  '5': 'a 5',
+  '4': 'a 4',
+  '3': 'a 3',
+  '2': 'a 2',
+};
+
+function rankLabel(rank: string): string {
+  return rankLabels[rank] || rank;
 }
 
 function msColor(ms: number): string {
@@ -96,6 +117,7 @@ export function GamePage({
   scores,
   roundResult,
   reactionHistory,
+  triggerRank,
   onSlap,
 }: GameProps) {
   const canSlap = phase === 'playing' && !!currentCard;
@@ -107,7 +129,7 @@ export function GamePage({
   }, [canSlap, onSlap]);
 
   const isMyWin = roundResult?.winner === playerName;
-  const isAce = currentCard?.rank === 'A';
+  const isTrigger = currentCard?.rank === triggerRank;
 
   const playerTimes = reactionHistory[playerName] || [];
   const opponentTimes = reactionHistory[opponent] || [];
@@ -153,7 +175,7 @@ export function GamePage({
 
           {/* Center: Card */}
           <div className="relative flex flex-col items-center justify-center flex-1 min-w-0">
-            <Card card={currentCard} cardNumber={cardNumber} />
+            <Card card={currentCard} cardNumber={cardNumber} triggerRank={triggerRank} />
 
             {/* Round Result Overlay */}
             {phase === 'round_end' && roundResult && (
@@ -219,12 +241,12 @@ export function GamePage({
           <div className="flex flex-col gap-2">
             <div className="flex justify-between items-end">
               <span className="font-headline text-[10px] text-primary uppercase tracking-widest">
-                {isAce ? 'ACE_DETECTED' : 'CTRL_PLAYER'}
+                {isTrigger ? 'TRIGGER_DETECTED' : 'CTRL_PLAYER'}
               </span>
               <span className="text-[10px] text-on-surface-variant font-headline uppercase tracking-widest">
-                {currentCard?.rank === 'A'
-                  ? "IT'S AN ACE — STRIKE NOW!"
-                  : 'Wait for an Ace...'}
+                {isTrigger
+                  ? `IT'S ${rankLabel(triggerRank).toUpperCase()} — STRIKE NOW!`
+                  : `Wait for ${rankLabel(triggerRank)}...`}
               </span>
             </div>
             <button
@@ -232,7 +254,7 @@ export function GamePage({
               disabled={!canSlap}
               className={`group relative h-16 md:h-20 overflow-hidden transition-all active:scale-[0.97] ${
                 canSlap
-                  ? isAce
+                  ? isTrigger
                     ? 'bg-gradient-to-r from-primary to-primary-container shadow-[0_0_30px_rgba(129,236,255,0.3)]'
                     : 'bg-gradient-to-r from-primary to-primary-container'
                   : 'bg-surface-highest cursor-not-allowed'

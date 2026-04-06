@@ -80,13 +80,15 @@ func TestDeckReset(t *testing.T) {
 	assert.Equal(t, 52, deck.Remaining())
 }
 
-func TestCardIsAce(t *testing.T) {
+func TestCardIsTrigger(t *testing.T) {
 	ace := game.Card{Suit: game.SuitHearts, Rank: game.RankAce}
-	assert.True(t, ace.IsAce())
+	assert.True(t, ace.IsTrigger(game.RankAce))
+	assert.False(t, ace.IsTrigger(game.RankKing))
 
 	king := game.Card{Suit: game.SuitSpades, Rank: game.RankKing}
-	assert.False(t, king.IsAce())
+	assert.True(t, king.IsTrigger(game.RankKing))
+	assert.False(t, king.IsTrigger(game.RankAce))
 
 	two := game.Card{Suit: game.SuitClubs, Rank: game.Rank2}
-	assert.False(t, two.IsAce())
+	assert.False(t, two.IsTrigger(game.RankAce))
 }

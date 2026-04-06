@@ -16,6 +16,7 @@ type Config struct {
 	CardFlipMaxDelay time.Duration
 	RoundEndDelay    time.Duration
 	RoundsToWin      int
+	TriggerRank      string
 }
 
 func LoadConfig() *Config {
@@ -26,6 +27,16 @@ func LoadConfig() *Config {
 
 	origin := os.Getenv("ALLOWED_ORIGIN")
 
+	triggerRank := os.Getenv("TRIGGER_RANK")
+	validRanks := map[string]bool{
+		"A": true, "2": true, "3": true, "4": true, "5": true,
+		"6": true, "7": true, "8": true, "9": true, "10": true,
+		"J": true, "Q": true, "K": true,
+	}
+	if !validRanks[triggerRank] {
+		triggerRank = "A"
+	}
+
 	return &Config{
 		Port:             port,
 		AllowedOrigin:    origin,
@@ -34,6 +45,7 @@ func LoadConfig() *Config {
 		CardFlipMaxDelay: durationEnv("CARD_FLIP_MAX_DELAY_MS", 3000),
 		RoundEndDelay:    durationEnv("ROUND_END_DELAY_MS", 2000),
 		RoundsToWin:      intEnv("ROUNDS_TO_WIN", 3),
+		TriggerRank:      triggerRank,
 	}
 }
 

@@ -74,14 +74,14 @@ export function GameOverPage({
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', duration: 0.6 }}
-          className="text-center relative shrink-0"
+          className="text-center relative shrink-0 px-4"
         >
           <div className="absolute -inset-10 bg-primary/5 blur-3xl" />
           <p className="font-headline text-primary tracking-[0.4em] uppercase text-[10px] mb-1 font-bold relative">
             MATCH TERMINATED
           </p>
           <h1
-            className={`font-headline font-black text-4xl md:text-6xl italic tracking-tighter mb-1 relative ${
+            className={`font-headline font-black text-4xl md:text-6xl italic tracking-tighter mb-1 relative pr-3 ${
               isWinner
                 ? 'text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary-container to-white drop-shadow-[0_0_30px_rgba(129,236,255,0.4)]'
                 : 'text-transparent bg-clip-text bg-gradient-to-r from-secondary via-secondary to-white drop-shadow-[0_0_30px_rgba(255,112,115,0.4)]'
@@ -145,28 +145,30 @@ export function GameOverPage({
             initial={{ x: 40, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="md:col-span-6 bg-surface-low p-4 border-r-4 border-secondary flex items-center justify-between gap-4"
+            className="md:col-span-6 bg-surface-low p-4 border-r-4 border-secondary"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-surface-highest flex items-center justify-center shrink-0">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="text-secondary">
-                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                </svg>
-              </div>
-              <div>
-                <div className="text-[10px] text-on-surface-variant uppercase tracking-widest">
-                  {!isWinner ? 'Winner' : 'Opponent'}
+            <div className="flex items-center justify-between gap-4 mb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-surface-highest flex items-center justify-center shrink-0">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="text-secondary">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                  </svg>
                 </div>
-                <div className="text-sm font-headline font-bold text-on-surface uppercase">
-                  {opponent}
+                <div>
+                  <div className="text-[10px] text-on-surface-variant uppercase tracking-widest">
+                    {!isWinner ? 'Winner' : 'Opponent'}
+                  </div>
+                  <div className="text-sm font-headline font-bold text-on-surface uppercase">
+                    {opponent}
+                  </div>
                 </div>
               </div>
+              <span className="text-3xl font-headline font-black text-secondary">
+                {opponentScore}
+              </span>
             </div>
-            <span className="text-3xl font-headline font-black text-secondary">
-              {opponentScore}
-            </span>
             {oppAvgReaction !== null && (
-              <div className="flex gap-4 mt-3">
+              <div className="flex gap-4">
                 <div className="flex-1 bg-surface-mid p-2">
                   <div className="text-[10px] text-on-surface-variant uppercase tracking-widest">Avg Reaction</div>
                   <div className="text-lg font-headline font-black text-secondary">{oppAvgReaction}<span className="text-[10px] ml-0.5">ms</span></div>

@@ -86,7 +86,7 @@ func (s *GameService) GetActiveRooms() []ActiveRoom {
 }
 
 func (s *GameService) CreateGame(roomID, player1, player2 string, conns map[string]*infra.Connection) {
-	g := NewGame(roomID, player1, player2, s.cfg.RoundsToWin)
+	g := NewGame(roomID, player1, player2, s.cfg.RoundsToWin, Rank(s.cfg.TriggerRank))
 	gameRoom := &GameRoom{
 		Game:        g,
 		Connections: conns,
@@ -109,6 +109,7 @@ func (s *GameService) CreateGame(roomID, player1, player2 string, conns map[stri
 			Type:         "game_start",
 			Opponent:     opponent,
 			PlayerNumber: playerNum,
+			TriggerRank:  s.cfg.TriggerRank,
 		})
 	}
 
@@ -226,7 +227,7 @@ func (s *GameService) runGameLoop(roomID string) {
 			CardNumber: cardNum,
 		})
 
-		if card.IsAce() {
+		if card.IsTrigger(Rank(s.cfg.TriggerRank)) {
 			// Wait for clicks with timeout
 			select {
 			case <-time.After(s.cfg.AceClickTimeout):

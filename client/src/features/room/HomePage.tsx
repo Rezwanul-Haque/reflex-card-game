@@ -164,7 +164,7 @@ export function HomePage({ onJoin }: HomeProps) {
                   <line x1="12" y1="8" x2="12.01" y2="8" />
                 </svg>
                 <span className="text-[10px] font-bold text-on-surface-variant tracking-widest font-headline uppercase">
-                  Wait for the Ace. Be the first to slap. Fastest reflex wins.
+                  Wait for the trigger card. Be the first to slap. Fastest reflex wins.
                 </span>
               </div>
               <span className="text-[10px] font-bold text-primary animate-pulse tracking-widest">

@@ -55,6 +55,7 @@ type GameStartMsg struct {
 	Type         string `json:"type"`
 	Opponent     string `json:"opponent"`
 	PlayerNumber int    `json:"player_number"`
+	TriggerRank  string `json:"trigger_rank"`
 }
 
 type CardFlipMsg struct {
